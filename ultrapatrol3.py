@@ -390,7 +390,7 @@ ULTRA_THRESHOLD = 60  # 自動停止距離（cm）
 # ★ 延遲啟動超聲判斷
 # =====================================================
 ultra_enabled = False             # 是否啟動超聲停止
-ultra_delay_time = 25            # 巡線開始後 20 秒才啟動
+ultra_delay_time = 30            # 巡線開始後 20 秒才啟動
 start_time_ultra = None           # 記錄巡線開始時間
 
 # =====================================================
@@ -412,10 +412,10 @@ img_centerx = 320
 # 初始位置
 # =====================================================
 def initMove():
-    Board.setPWMServoPulse(3, 750, 1000)
-    Board.setPWMServoPulse(4, 2160, 1000)
-    Board.setPWMServoPulse(5, 1620, 1000)
-    Board.setPWMServoPulse(6, 1500, 1000)
+    Board.setPWMServoPulse(3, 800, 1000)
+    Board.setPWMServoPulse(4, 2260, 1000)
+    Board.setPWMServoPulse(5, 1630, 1000)
+    Board.setPWMServoPulse(6, 1440, 1000)
     MotorStop()
 
 def MotorStop():
@@ -648,10 +648,10 @@ def move():
             adjust = max(min(pitch_pid.output, 100), -100)
             base_speed = Misc.map(adjust, -100, 100, -MAX_ADJUST_SPEED, MAX_ADJUST_SPEED)
 
-            Board.setMotor(1, -int(BASE_SPEED + base_speed))
+            Board.setMotor(1, int(BASE_SPEED - base_speed))
             Board.setMotor(2, int(BASE_SPEED + base_speed))
             Board.setMotor(3, int(BASE_SPEED - base_speed))
-            Board.setMotor(4, -int(BASE_SPEED - base_speed))
+            Board.setMotor(4, int(BASE_SPEED + base_speed))
 
             time.sleep(0.01)
             continue
@@ -694,10 +694,16 @@ th_move.start()
 # =====================================================
 # ROI 設定
 # =====================================================
+# roi = [
+#     (240, 280,  0, 640, 0.1), 
+#     (340, 380,  0, 640, 0.3), 
+#     (430, 460,  0, 640, 0.6)
+# ]
+
 roi = [
     (240, 280,  0, 640, 0.1), 
-    (340, 380,  0, 640, 0.3), 
-    (430, 460,  0, 640, 0.6)
+    (320, 360,  0, 640, 0.3), 
+    (360, 400,  0, 640, 0.6)
 ]
 
 roi_h_list = [

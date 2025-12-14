@@ -413,9 +413,9 @@ img_centerx = 320
 # =====================================================
 def initMove():
     Board.setPWMServoPulse(3, 750, 1000)
-    Board.setPWMServoPulse(4, 2160, 1000)
-    Board.setPWMServoPulse(5, 1620, 1000)
-    Board.setPWMServoPulse(6, 1500, 1000)
+    Board.setPWMServoPulse(4, 2260, 1000)
+    Board.setPWMServoPulse(5, 1630, 1000)
+    Board.setPWMServoPulse(6, 1440, 1000)
     MotorStop()
 
 def MotorStop():
@@ -648,10 +648,10 @@ def move():
             adjust = max(min(pitch_pid.output, 100), -100)
             base_speed = Misc.map(adjust, -100, 100, -MAX_ADJUST_SPEED, MAX_ADJUST_SPEED)
 
-            Board.setMotor(1, -int(BASE_SPEED + base_speed))
+            Board.setMotor(1, int(BASE_SPEED - base_speed))
             Board.setMotor(2, int(BASE_SPEED + base_speed))
             Board.setMotor(3, int(BASE_SPEED - base_speed))
-            Board.setMotor(4, -int(BASE_SPEED - base_speed))
+            Board.setMotor(4, int(BASE_SPEED + base_speed))
 
             time.sleep(0.01)
             continue
@@ -696,8 +696,8 @@ th_move.start()
 # =====================================================
 roi = [
     (0,   80,  0, 640, 0.1),   # Top
-    (80, 160,  0, 640, 0.3),   # Middle
-    (160,240,  0, 640, 0.6)    # Bottom of upper half
+    (80, 150,  0, 640, 0.3),   # Middle
+    (150,200,  0, 640, 0.6)    # Bottom of upper half
 ]
 
 roi_h_list = [

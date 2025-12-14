@@ -15,13 +15,13 @@ import HiwonderSDK.mecanum as mecanum
 
 chassis = mecanum.MecanumChassis(
     wheel_init_dir=[1, 1, 1, 1],
-    wheel_init_map=[4, 1 , 3 , 2]
+    wheel_init_map=[1,2,3,4]
 )
 AK = ArmIK()
 def initMove():
     # Board.setPWMServoPulse(1, 1500, 500)
     # Board.setPWMServoPulse(3, 1500, 500)
-    Board.setPWMServoPulse(6, 1500, 500)
+    Board.setPWMServoPulse(6, 1440, 500)
     time.sleep(0.5)
     AK.setPitchRangeMoving((0, 6, 18), 0,-90, 90, 1500)
 
@@ -428,243 +428,243 @@ def turn_avoid(chassis, duration=0.65):
 
 def main():
     # initMove()
-    
+
     controller = ProcessController()
 
 
-    # print("TASK 1 营救伤员 进入2号门抓取62号")
-    # Board.setPWMServoPulse(6, 1500 , 1000)
-    # # Step 1：黑線巡線
-    # print("\n黑線巡線開始")
-    # controller.start_process("line", "black")
+    print("TASK 1 营救伤员 进入2号门抓取62号")
+    Board.setPWMServoPulse(6, 1500 , 1000)
+    # Step 1：黑線巡線
+    print("\n黑線巡線開始")
+    controller.start_process("line", "black")
 
-    # # 等待巡線結束（fo_black_line.py 執行完畢後 process 會自動退出）
-    # while controller.processes["line"]["running"]:
-    #     p = controller.processes["line"]["process"]
+    # 等待巡線結束（fo_black_line.py 執行完畢後 process 會自動退出）
+    while controller.processes["line"]["running"]:
+        p = controller.processes["line"]["process"]
 
-    #     # ⭐ poll() 回傳非 None = 子程序已退出
-    #     if p.poll() is not None:
-    #         controller.processes["line"]["running"] = False
-    #         break
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["line"]["running"] = False
+            break
 
-    #     time.sleep(0.2)
+        time.sleep(0.2)
 
-    # print("✔ 黑線巡線結束")
+    print("✔ 黑線巡線結束")
+
+    # 转向并识别二维码然后进门抓取并退出
+    print("\n启动金门抓取任务")
+    controller.start_process("jinmenzhuaqu")
+
+    # 等待金门抓取任务结束
+    while controller.processes["jinmenzhuaqu"]["running"]:
+        p = controller.processes["jinmenzhuaqu"]["process"]
+
+        # ⭐ poll() 返回非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["jinmenzhuaqu"]["running"] = False
+            break
+
+        time.sleep(0.2)
+
+    print("✔ 金门抓取任务完成")
+
+    # Step 4：第二次黑線巡線
+    turn_avoid(chassis,duration=0.5)
+    print("\n第二次黑線巡線開始")
+    controller.start_process("csxx3", "black")
+
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["csxx3"]["running"]:
+        p = controller.processes["csxx3"]["process"]
+
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["csxx3"]["running"] = False
+            break
+
+        time.sleep(1.2)
+
+    print("✔ 第二次黑線巡線結束")
+
+    print("\n放置傷員任務開始")
+    controller.start_process("csfz")
+
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["csfz"]["running"]:
+        p = controller.processes["csfz"]["process"]
+
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["csfz"]["running"] = False
+            break
+
+        time.sleep(0.2)
+
+    print("✔ 放置傷員任務結束")
+
+    print("TASK 2 运送补给 将23号块从1号场地运送到3号门内")
+    print("自動流程啟動：黑線巡線 → QR辨識")
+
+        # Step 1：黑線巡線
+    print("\n超聲巡線和拍照開始")
+    controller.start_process("csxx")
+
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["csxx"]["running"]:
+        p = controller.processes["csxx"]["process"]
+
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["csxx"]["running"] = False
+            break
+
+        time.sleep(0.2)
+
+    Board.setPWMServoPulse(3, 1500, 1000)
+    time.sleep(0.5)
+    take_photo("lunarfarm")
+
+    print("超聲尋仙和拍照巡線結束")
+
+    # Step 2：識別抓取
+    print("\n識別抓取開始")
+    controller.start_process("visualgrasp")
+
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["visualgrasp"]["running"]:
+        p = controller.processes["visualgrasp"]["process"]
+
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["visualgrasp"]["running"] = False
+            break
+
+        time.sleep(0.2)
+    turn_avoid(chassis, duration=0.43)
+    print("識別抓取結束")
+
+    print("\n第二次超聲巡線開始")
+    controller.start_process("csxx2")
+
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["csxx2"]["running"]:
+        p = controller.processes["csxx2"]["process"]
+
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["csxx2"]["running"] = False
+            break
+
+        time.sleep(0.2)
+
+    print("超聲巡線結束")
+
     
-    #转向并识别二维码然后进门抓取并退出
-#     print("\n启动金门抓取任务")
-#     controller.start_process("jinmenzhuaqu")
+    time.sleep(0.6)
+    #Step 5：進門放置
+    print("\n進門放置開始")
+    controller.start_process("jinmenfangzhi")
+   # 等待 QR 辨識結束
+    while controller.processes["jinmenfangzhi"]["running"]:
+        p = controller.processes["jinmenfangzhi"]["process"]
 
-#     # 等待金门抓取任务结束
-#     while controller.processes["jinmenzhuaqu"]["running"]:
-#         p = controller.processes["jinmenzhuaqu"]["process"]
-
-#         # ⭐ poll() 返回非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["jinmenzhuaqu"]["running"] = False
-#             break
-
-#         time.sleep(0.2)
-
-#     print("✔ 金门抓取任务完成")
-
-#     # Step 4：第二次黑線巡線
-#     turn_avoid(chassis,duration=0.5)
-#     print("\n第二次黑線巡線開始")
-#     controller.start_process("csxx3", "black")
-
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["csxx3"]["running"]:
-#         p = controller.processes["csxx3"]["process"]
-
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["csxx3"]["running"] = False
-#             break
-
-#         time.sleep(1.2)
-
-#     print("✔ 第二次黑線巡線結束")
-
-#     print("\n放置傷員任務開始")
-#     controller.start_process("csfz")
-
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["csfz"]["running"]:
-#         p = controller.processes["csfz"]["process"]
-
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["csfz"]["running"] = False
-#             break
-
-#         time.sleep(0.2)
-
-#     print("✔ 放置傷員任務結束")
-
-#     print("TASK 2 运送补给 将23号块从1号场地运送到3号门内")
-#     print("自動流程啟動：黑線巡線 → QR辨識")
-
-#         # Step 1：黑線巡線
-#     print("\n超聲巡線和拍照開始")
-#     controller.start_process("csxx")
-
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["csxx"]["running"]:
-#         p = controller.processes["csxx"]["process"]
-
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["csxx"]["running"] = False
-#             break
-
-#         time.sleep(0.2)
+         # ⭐ 子程序已退出
+        if p.poll() is not None:
+            controller.processes["jinmenfangzhi"]["running"] = False
+            break
     
-#     Board.setPWMServoPulse(3, 1500, 1000)
-#     time.sleep(0.5)
-#     take_photo("lunarfarm")
+    time.sleep(0.2)
+    print("\n進門放置結束")
 
-#     print("超聲尋仙和拍照巡線結束")
-
-#     # Step 2：識別抓取
-#     print("\n識別抓取開始")
-#     controller.start_process("visualgrasp")
-
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["visualgrasp"]["running"]:
-#         p = controller.processes["visualgrasp"]["process"]
-
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["visualgrasp"]["running"] = False
-#             break
-
-#         time.sleep(0.2)
-#     turn_avoid(chassis, duration=0.5)
-#     print("識別抓取結束")
-     
-#     print("\n第二次超聲巡線開始")
-#     controller.start_process("csxx2")
-
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["csxx2"]["running"]:
-#         p = controller.processes["csxx2"]["process"]
-
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["csxx2"]["running"] = False
-#             break
-
-#         time.sleep(0.2)
-
-#     print("超聲巡線結束")
-
-    
-#     time.sleep(0.6)
-#     #Step 5：進門放置
-#     print("\n進門放置開始")
-#     controller.start_process("jinmenfangzhi")
-#    # 等待 QR 辨識結束
-#     while controller.processes["jinmenfangzhi"]["running"]:
-#         p = controller.processes["jinmenfangzhi"]["process"]
-
-#          # ⭐ 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["jinmenfangzhi"]["running"] = False
-#             break
-    
-#     time.sleep(0.2)
-#     print("\n進門放置結束")
-
-#     print("運送補給任務完成")
+    print("運送補給任務完成")
 
 
 
-#     print("TASK 3 將4場地零件區的零件0運送到3場地核電站")
+    print("TASK 3 將4場地零件區的零件0運送到3場地核電站")
 
-#     controller.start_process("grasp0")
+    controller.start_process("grasp0")
 
-#     # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
-#     while controller.processes["grasp0"]["running"]:
-#         p = controller.processes["grasp0"]["process"]
+    # 等待巡線結束（line.py 執行完畢後 process 會自動退出）
+    while controller.processes["grasp0"]["running"]:
+        p = controller.processes["grasp0"]["process"]
 
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["grasp0"]["running"] = False
-#             break
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["grasp0"]["running"] = False
+            break
 
-#         time.sleep(0.2)
+        time.sleep(0.2)
 
-#     print("紅色巡綫開始")
-#     controller.start_process("redblack")
+    print("紅色巡綫開始")
+    controller.start_process("redblack")
 
-#     while controller.processes["redblack"]["running"]:
-#         p = controller.processes["redblack"]["process"]
+    while controller.processes["redblack"]["running"]:
+        p = controller.processes["redblack"]["process"]
 
-#         # ⭐ poll() 回傳非 None = 子程序已退出
-#         if p.poll() is not None:
-#             controller.processes["redblack"]["running"] = False
-#             break
+        # ⭐ poll() 回傳非 None = 子程序已退出
+        if p.poll() is not None:
+            controller.processes["redblack"]["running"] = False
+            break
 
-#         time.sleep(0.2)
+        time.sleep(0.2)
 
-#     place_object()#張開爪子放物塊
+    place_object()#張開爪子放物塊
 
-#     Board.setPWMServoPulse(3, 1500, 1000)
-#     time.sleep(0.5)
-#     #拍照
-#     take_photo("nuclear")
-#     print("運送補給任務完成")
+    Board.setPWMServoPulse(3, 1500, 1000)
+    time.sleep(0.5)
+    #拍照
+    take_photo("nuclear")
+    print("運送補給任務完成")
 
 
 
-#     print("TASK 4 偵察")
-#     #掉頭
-#     chassis.translation(0, -50)
-#     time.sleep(2)
-#     chassis.translation(0, 0)
-#     turn_avoid(chassis, duration=1.07)
+    print("TASK 4 偵察")
+    #掉頭
+    chassis.translation(0, -50)
+    time.sleep(2)
+    chassis.translation(0, 0)
+    turn_avoid(chassis, duration=1.07)
 
-#     print("\n红线巡线开始")
-#     controller.start_process("red")
+    print("\n红线巡线开始")
+    controller.start_process("red")
 
-#     while controller.processes["red"]["running"]:
-#         p = controller.processes["red"]["process"]
-#         if p.poll() is not None:
-#             controller.processes["red"]["running"] = False
-#             break
-#         time.sleep(0.2)
-#     print("红线巡线结束")
+    while controller.processes["red"]["running"]:
+        p = controller.processes["red"]["process"]
+        if p.poll() is not None:
+            controller.processes["red"]["running"] = False
+            break
+        time.sleep(0.2)
+    print("红线巡线结束")
 
-#     print("\n第一次拍照开始")
-#     controller.start_process("foto")
-#     foto()
-#     print("拍照结束")
-#     print("偵察任務結束")
-#     chassis.set_velocity(0, 0, 30)   # 超快速旋轉
-#     time.sleep(0.25)                   # 大約 180 度
-#     print("TASK 5 外星人綫索任務")
-#     print("\二维码巡线开始")
-#     controller.start_process("fo_black_line_qr")
-#     while controller.processes["fo_black_line_qr"]["running"]:
-#         p = controller.processes["fo_black_line_qr"]["process"]
-#         if p.poll() is not None:
-#             controller.processes["fo_black_line_qr"]["running"] = False
-#             break
-#         time.sleep(0.2)
-#     print("QR巡线结束")
-#     time.sleep(1)
-#     print("\n第二次拍照开始")
-#     photo()
-#     print("拍照结束")
+    print("\n第一次拍照开始")
+    controller.start_process("foto")
+    foto()
+    print("拍照结束")
+    print("偵察任務結束")
+    chassis.set_velocity(0, 0, 30)   # 超快速旋轉
+    time.sleep(0.25)                   # 大約 180 度
+    print("TASK 5 外星人綫索任務")
+    print("\二维码巡线开始")
+    controller.start_process("fo_black_line_qr")
+    while controller.processes["fo_black_line_qr"]["running"]:
+        p = controller.processes["fo_black_line_qr"]["process"]
+        if p.poll() is not None:
+            controller.processes["fo_black_line_qr"]["running"] = False
+            break
+        time.sleep(0.2)
+    print("QR巡线结束")
+    time.sleep(1)
+    print("\n第二次拍照开始")
+    photo()
+    print("拍照结束")
 
-#     print("外星人綫索任務結束")
+    print("外星人綫索任務結束")
 
-#     print("TASK 6 跳舞任務開始")
-#     #轉身
-#     chassis.set_velocity(0, 0, 30)   # 超快速旋轉
-#     time.sleep(0.25)                   # 大約 90度
-#     chassis.set_velocity(0, 0, 0)
+    print("TASK 6 跳舞任務開始")
+    #轉身
+    chassis.set_velocity(0, 0, 30)   # 超快速旋轉
+    time.sleep(0.25)                   # 大約 90度
+    chassis.set_velocity(0, 0, 0)
 
     print("\n红线巡线开始")
     controller.start_process("red")

@@ -24,17 +24,17 @@ distance_pid = PID(P=6.3, I=0.1, D=0.2)  # PID参数
 TARGET_QR_ID = 2 # 目标QR码ID
 
 # 目标距离设置
-FORWARD_TARGET_DISTANCE = 19.0  # 前进目标距离 (cm)
-BACKWARD_TARGET_DISTANCE = 42.8  # 后退目标距离 (cm)
+FORWARD_TARGET_DISTANCE = 20.0  # 前进目标距离 (cm)
+BACKWARD_TARGET_DISTANCE = 44.0  # 后退目标距离 (cm)
 DISTANCE_TOLERANCE = 1.0  # 距离容差 (cm)
 
 # ========== 小車控制 ==========
 
 servo1 = 800
-servo3 = 1230
+servo3 = 1500
 servo4 = 2500
 servo5 = 1300
-servo6 = 1500
+servo6 = 1440
 
 def initMove1():
     Board.setPWMServoPulse(1, servo1, 300)
@@ -45,7 +45,7 @@ def initMove1():
 
 def initMove2():
     Board.setPWMServoPulse(1, 2000, 800)
-    
+    Board.setPWMServoPulse(6, 1440, 800)
     AK.setPitchRangeMoving((0, 8, 10), -90, -90, 0, 1500)
 
 HWSONAR = Sonar.Sonar()
@@ -178,7 +178,7 @@ def move_backward_pid():
 
 chassis = mecanum.MecanumChassis(
     wheel_init_dir=[1, 1, 1, 1],
-    wheel_init_map=[4, 1 , 3 , 2]
+    wheel_init_map=[1, 2, 3, 4]
 )
 
 def grab_object():
@@ -302,8 +302,8 @@ class PID:
         return output
 
 # 初始化 PID
-pid_x = PID(0.2, 0.2, 0.2) 
-pid_y = PID(0.2, 0.2, 0.2)
+pid_x = PID(0.6, 1, 1) 
+pid_y = PID(0.6, 1, 1)
 
 latest_frame = None
 camera_running = False
@@ -409,7 +409,7 @@ def move_to_qr():
                     current_state = 1
                 else:
                     if time.time() - search_timer > 0.3:
-                        chassis.translation(60 * last_search_direction, 0)
+                        chassis.translation(-60 * last_search_direction, 0)
                         time.sleep(0.5)
                         chassis.set_velocity(0, 0, 0)
                         time.sleep(1)
@@ -436,7 +436,7 @@ def move_to_qr():
                     print(vx)
                     if abs(err_x) < 5: vx = 0
                     # if abs(err_y) < 5: vy = 0
-                    chassis.translation(-vx, -0)
+                    chassis.translation(vx, -0)
                     time.sleep(0.05)
                     chassis.set_velocity(0, 0, 0)
                     time.sleep(1)
@@ -511,6 +511,7 @@ def init_hardware():
     Board.setMotor(4, 0)
     Board.setPWMServoPulse(1, 2500, 500)
     time.sleep(0.5)
+    Board.setPWMServoPulse(6, 1230, 500)
     AK.setPitchRangeMoving((0, 10, 10), -90, -90, 0, 1500)
     time.sleep(1)
 
@@ -548,8 +549,8 @@ def execute_grasp():
     # time.sleep(1.5)
     # res = AK.setPitchRangeMoving((target_x, target_y, target_z), -90, -90, 0, 1000)
     # if not res: 
-        # print("❌ 目标坐标不可达！")
-    Board.setPWMServoPulse(3, 820, 500)
+    # print("❌ 目标坐标不可达！")
+    Board.setPWMServoPulse(3, 900, 500)
     Board.setPWMServoPulse(4, 1710, 500)
     Board.setPWMServoPulse(5, 2400, 500)
     time.sleep(1.2)
@@ -586,7 +587,7 @@ def process_frame_grasp62(img):
             img_w = frame.shape[1]
             img_h = frame.shape[0]
             error_x = center_x - (img_w / 2)
-            error_y = center_y - (img_h / 2) - 45
+            error_y = center_y - (img_h / 2) - 62
             print(center_y, img_h/2, error_y)
             cv2.circle(frame, (int(center_x), int(center_y)), 5, (0, 255, 0), -1)
             cv2.putText(frame, f"ErrY:{int(error_y)} ErrX:{int(error_x)}", (10, 30),
@@ -650,7 +651,7 @@ def grasp62():
     lost_target_count = 0
     MAX_LOST_FRAMES = 20
 
-    #向左移動
+    # # 向左移動
     # chassis.translation(50,0)
     # time.sleep(1.4)
     # chassis.set_velocity(0,0,0)
@@ -677,14 +678,14 @@ def grasp62():
                     chassis.set_velocity(0, 0, 0)
                     current_state = 1
                 # else:
-                    # if time.time() - search_timer > 0.3:
-                        # chassis.translation(0,60 * last_search_direction)
-                        # time.sleep(0.5)
-                        # chassis.set_velocity(0, 0, 0)
-                        # time.sleep(1)
-                    # if time.time() - search_timer > 2.0:
-                    #     search_timer = time.time()
-                    #     last_search_direction *= -1
+                #     if time.time() - search_timer > 0.3:
+                #         chassis.translation(0,60 * last_search_direction)
+                #         time.sleep(0.5)
+                #         chassis.set_velocity(0, 0, 0)
+                #         time.sleep(1)
+                #     if time.time() - search_timer > 2.0:
+                #         search_timer = time.time()
+                #         last_search_direction *= -1
 
             elif current_state == 1:  # 对准模式
                 if not found:
@@ -705,10 +706,10 @@ def grasp62():
                     print(vy)
                     if abs(err_x) < 5: vx = 0
                     if abs(err_y) < 5: vy = 0
-                    chassis.translation(-vx, -vy)
+                    chassis.translation(vx, -vy)
                     time.sleep(0.05)
                     chassis.set_velocity(0, 0, 0)
-                    time.sleep(1)
+                    time.sleep(0.5)
                     print(err_x, err_y)
                     if abs(err_x) < 30 and abs(err_y) < 10:
                         print(f"✅ 对准完成! ErrX:{int(err_x)}, Erry:{int(err_y)}")
@@ -763,22 +764,22 @@ def jmzq():
 
         #0. 横向对准
 
-        # chassis.set_velocity(0,0,-20)        
-        # time.sleep(0.5)
-        # chassis.set_velocity(0,0,0)
-        # chassis.set_velocity(-50, 90, 0)
-        # time.sleep(0.25)
-        # chassis.set_velocity(0,0,0)
-        # print("\n=== 初始阶段：横向对准 ===")
-        # move_to_qr()
+        chassis.set_velocity(0,0,-20)        
+        time.sleep(0.55)
+        chassis.set_velocity(0,0,0)
+        chassis.set_velocity(-50, 90, 0)
+        time.sleep(0.25)
+        chassis.set_velocity(0,0,0)
+        print("\n=== 初始阶段：横向对准 ===")
+        move_to_qr()
         #1. 抬起一下机械臂开门机械臂
-        # nod()
-        # time.sleep(1)
+        nod()
+        time.sleep(1)
         #2. 初始化机械臂位置
-        # initMove2()
+        initMove2()
         # 1. 使用PID前进到17cm
         print("\n=== 第一阶段：前进到17cm ===")
-        # forward_time = move_forward_pid()
+        forward_time = move_forward_pid()
         
         # 2. QR识别
         # print("\n=== 第二阶段：QR识别 ===")
@@ -794,9 +795,9 @@ def jmzq():
         print("\n=== 第四阶段：后退到42.8cm ===")
         move_backward_pid()
 
-        chassis.set_velocity(0, 0, -30)   # 超快速旋轉
-        time.sleep(0.5)       
-        chassis.set_velocity(0,0,0)
+        # chassis.set_velocity(0, 0, -30)   # 超快速旋轉
+        # time.sleep(0.5)       
+        # chassis.set_velocity(0,0,0)
 
         print("\n" + "="*40)
         print("🎉 任务完成！")
